@@ -16,7 +16,7 @@ const SYSTEM =
 
 async function answer(text) {
   const r = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-flash-preview",
     contents: text || "",
     config: { systemInstruction: SYSTEM },
   });
