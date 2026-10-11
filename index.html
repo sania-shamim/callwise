@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Callwise</title>
+<style>
+  body{font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px;background:#f4f6fb}
+  h1{margin-bottom:0} p.tag{margin-top:4px;color:#555}
+  button{padding:14px 20px;font-size:18px;border:0;border-radius:12px;background:#2563eb;color:#fff;width:100%;margin:8px 0}
+  input{padding:12px;font-size:16px;width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #ccc}
+  #log{background:#fff;border-radius:12px;padding:12px;min-height:160px;margin-top:12px}
+  .you{color:#2563eb}.bot{color:#111}
+</style>
+</head>
+<body>
+<h1>Callwise</h1>
+<p class="tag">Call. Ask. Know.</p>
+<button id="mic">🎤 Tap and speak</button>
+<input id="txt" placeholder="Or type your question here">
+<button id="send">Send</button>
+<div id="log"></div>
+<script>
+const log=document.getElementById("log");
+function add(who,t){log.innerHTML+='<p class="'+who+'"><b>'+(who=="you"?"You":"Callwise")+':</b> '+t+'</p>'}
+async function ask(text){
+  if(!text)return;
+  add("you",text);
+  try{
+    const r=await fetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});
+    const d=await r.json();
+    add("bot",d.reply);
+    speechSynthesis.speak(new SpeechSynthesisUtterance(d.reply));
+  }catch(e){add("bot","Error, please try again.")}
+}
+document.getElementById("send").onclick=()=>{const t=document.getElementById("txt");ask(t.value);t.value=""};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+document.getElementById("mic").onclick=()=>{
+  if(!SR){add("bot","Voice not supported here. Please type.");return}
+  const rec=new SR();rec.lang="en-IN";
+  rec.onresult=e=>ask(e.results[0][0].transcript);
+  rec.onerror=()=>add("bot","Could not hear you. Try again or type.");
+  rec.start();
+};
+</script>
+</body>
+</html>
